@@ -19,7 +19,7 @@ wss.on('connection', (ws) => {
     //check if the message contains "dog" or "dogs"
     if (message.toLowerCase().includes('dog')) {
       //send a message back to the client
-      ws.send('The words "dog" or "dogs" are not allowed.');
+      ws.send('The word "dog" or "dogs" are not allowed.');
     } else {
       //broadcast message to all clients
       wss.clients.forEach((client) => {
