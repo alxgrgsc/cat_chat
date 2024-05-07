@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io('http://localhost:3000');
+    socket.on('message', function(msg) {
+      var node = document.createElement("LI");
+      var textnode = document.createTextNode(msg);
+      node.appendChild(textnode);
+      document.getElementById("messages").appendChild(node);
+    });
+
+    function sendMessage() {
+      var msg = document.getElementById("messageInput").value;
+      socket.emit('message', msg);
+    }
+  </script>
+  <ul id="messages"></ul>
+  <input id="messageInput" type="text">
+  <button onclick="sendMessage()">Send</button>
+</body>
+</html>
