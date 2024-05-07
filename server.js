@@ -1,33 +1,42 @@
-// import modules
+//import modules
 const express = require('express');
+const WebSocket = require('ws');
 const http = require('http');
-const socketIo = require('socket.io');
 
-//create an express app
+//create a new express app
 const app = express();
-// create a server instance
+//create a new http server
 const server = http.createServer(app);
-// create a socket instance
-const io = socketIo(server);
+//create a new WebSocket server
+const wss = new WebSocket.Server({ server });
 
-// middleware to block messages containing the word 'dog'
-io.use((socket, next) => {
-  socket.on('message', (msg) => {
-    if (msg.toLowerCase().includes('dog')) {
-      console.log('Blocked a message.');
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+
+  ws.on('message', (message) => {
+    message = String(message);
+    console.log('Received: ' + message);
+    //check if the message contains "dog" or "dogs"
+    if (message.toLowerCase().includes('dog')) {
+      //send a message back to the client
+      ws.send('The words "dog" or "dogs" are not allowed.');
     } else {
-      next();
+      //broadcast message to all clients
+      wss.clients.forEach((client) => {
+        //check if the client is still connected
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(message);
+        }
+      });
     }
   });
-});
-
-// listen for connection event
-io.on('connection', (socket) => {
-  console.log('a user connected');
-  socket.on('message', (msg) => {
-    io.emit('message', msg);
+  //when a client closes the connection
+  ws.on('close', () => {
+    console.log('Client disconnected');
   });
 });
 
-// start the server
-server.listen(3000, () => console.log('Server is running on port 3000'));
+//start our server
+server.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
+});

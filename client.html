@@ -1,23 +1,39 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <script src="/socket.io/socket.io.js"></script>
+  <input id="messageInput" type="text">
+  <button onclick="sendMessage()">Send</button>
+  <ul id="messages"></ul>
+
   <script>
-    var socket = io('http://localhost:3000');
-    socket.on('message', function(msg) {
-      var node = document.createElement("LI");
-      var textnode = document.createTextNode(msg);
-      node.appendChild(textnode);
-      document.getElementById("messages").appendChild(node);
-    });
+    var ws = new WebSocket('ws://localhost:3000');
+
+    ws.onmessage = function(event) {
+      if (event.data instanceof Blob) {
+        var reader = new FileReader();
+        reader.onload = function() {
+          addMessageToList(this.result);
+        };
+        reader.readAsText(event.data);
+      } else {
+        addMessageToList(event.data);
+      }
+    };
 
     function sendMessage() {
       var msg = document.getElementById("messageInput").value;
-      socket.emit('message', msg);
+      if (msg) {
+        ws.send(msg);
+        document.getElementById("messageInput").value = ""; // Clear the input field
+      }
+    }
+
+    function addMessageToList(message) {
+      var node = document.createElement("LI");
+      var textnode = document.createTextNode(message);
+      node.appendChild(textnode);
+      document.getElementById("messages").appendChild(node);
     }
   </script>
-  <ul id="messages"></ul>
-  <input id="messageInput" type="text">
-  <button onclick="sendMessage()">Send</button>
 </body>
 </html>
